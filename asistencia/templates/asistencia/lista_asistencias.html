@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Registro y Consulta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel='stylesheet' href="{% static 'empleados.css' %}">
+  <link rel="icon" href="{% static 'imagenes/logo_naciones_unidas.png'%}" type="image/x-icon">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .table th,
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table th {
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+    }
+
+    .table td {
+      text-align: center;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+      background-color: #f2f2f2;
+    }
+
+    .table-bordered th,
+    .table-bordered td {
+      border: 1px solid #ddd;
+    }
+
+    .table-responsive {
+      margin-top: 50px;
+    }
+
+    .filters {
+      margin: 20px 0;
+    }
+    .container{
+    padding: 80px;
+    transition: margin-left 0.3s ease;
+    }
+  </style>
+  
+</head>
+
+<body>
+  <!-- Navbar y Sidebar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <button class="menu-toggle btn btn-outline-light" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <a href="{% url 'registro' %}" class="btn"><i class="fas fa-user-plus"></i> Registrarse</a>
+    <a href="{% url 'empleados' %}"><i class="fas fa-users"></i> Empleados</a>
+    <a class="btn logout-btn" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+    <a href="{% url 'asistencia:registrar_asistencia' %}" ><i class="fas fa-check-square"></i> Registrar Asistencia</a>
+    <a href="{% url 'asistencia:lista_asistencias' %}" class="btn btn-secondary"><i class="fas fa-list-alt"></i> Ver Asistencias</a>
+    <a href="{% url 'dashboard' %}"><i class="fas fa-chart-line"></i> Dashboard</a>
+</div>
+
+  <!-- Main Content -->
+  <div class="container" id="content">
+    <h1 class="text-center mb-4">Lista de Asistencias</h1>
+
+    <!-- Filtros -->
+    <div class="filters">
+      <div class="row">
+        <div class="col-md-4">
+          <label for="nombreFiltro">Filtrar por Nombre</label>
+          <input type="text" id="nombreFiltro" class="form-control" placeholder="Buscar por nombre">
+        </div>
+        <div class="col-md-4">
+          <label for="estadoFiltro">Filtrar por Estado</label>
+          <select id="estadoFiltro" class="form-control">
+            <option value="">Todos</option>
+            <option value="Presente">Presente</option>
+            <option value="Ausente">Ausente</option>
+          </select>
+        </div>
+        
+        
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table id="tablaAsistencias" class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Empleado</th>
+            <th>Fecha</th>
+            <th>Hora Marcado</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for asistencia in asistencias %}
+          <tr>
+            <td>{{ asistencia.empleado.nombre }}</td>
+            <td>{{ asistencia.fecha }}</td>
+            <td>{{ asistencia.hora_marcado }}</td>
+            <td>{{ asistencia.estado }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+    // Función para alternar el sidebar
+    function toggleSidebar() {
+      $('#sidebar').toggleClass('active');
+      $('#content').toggleClass('shifted');
+    }
+
+    $(document).ready(function () {
+      var table = $('#tablaAsistencias').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": false,
+        "language": {
+          "url": "https://cdn.datatables.net/plug-ins/1.11.5/i18n/Spanish.json"
+        }
+      });
+
+      // Filtro en tiempo real por nombre (empleado)
+      $('#nombreFiltro').on('keyup', function () {
+        table.columns(0).search(this.value).draw();  
+      });
+
+      // Filtro por estado (presente, ausente, permiso)
+      $('#estadoFiltro').on('change', function () {
+        table.columns(3).search(this.value).draw();  
+      });
+
+      // Filtro por fecha (inicio y fin)
+      $('#fechaInicioFiltro, #fechaFinFiltro').on('change', function () {
+        var fechaInicio = $('#fechaInicioFiltro').val();
+        var fechaFin = $('#fechaFinFiltro').val();
+
+        
+        table.rows().every(function () {
+          var row = this.data();
+          var fecha = row[1];  
+
+          
+          var isInRange = true;
+          if (fechaInicio && fecha < fechaInicio) {
+            isInRange = false;
+          }
+          if (fechaFin && fecha > fechaFin) {
+            isInRange = false;
+          }
+
+         
+          if (isInRange) {
+            $(this.node()).show();
+          } else {
+            $(this.node()).hide();
+          }
+        });
+
+        
+        table.draw();
+      });
+    });
+
+
+    setTimeout(function () {
+      $('.alert').fadeOut('slow');
+    }, 5000);
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción a Talleres</title>
+    <link rel="stylesheet" href="{% static 'talleres/talleres.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            border: 1px solid #ccc;
+        }
+
+        .form-group input.is-invalid,
+        .form-group select.is-invalid {
+            border-color: red;
+        }
+
+        .alert {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="color_body">
+        <div class="form-container">
+            <h2>Inscripción a Talleres</h2>
+            <!-- Mensajes de éxito o error -->
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}" role="alert">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <form action="{% url 'inscripcion_talleres' %}" method="post" id="inscripcionForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nombre">Nombres</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                    <span id="error-nombre" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="apellido">Apellidos</label>
+                    <input type="text" id="apellido" name="apellido" required>
+                    <span id="error-apellido" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="correo">Correo</label>
+                    <input type="email" id="correo" name="correo" required>
+                    <span id="error-correo" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="numero">Número</label>
+                    <input type="tel" id="numero" name="numero" required>
+                    <span id="error-numero" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="apoderado">Nombre y Apellido del Apoderado</label>
+                    <input type="text" id="apoderado" name="apoderado" required>
+                    <span id="error-apoderado" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="grado">Grado</label>
+                    <select id="grado" name="grado" required>
+                        <option value="">Seleccione un grado</option>
+                        <option value="1">1°</option>
+                        <option value="2">2°</option>
+                        <option value="3">3°</option>
+                        <option value="4">4°</option>
+                        <option value="5">5°</option>
+                    </select>
+                    <span id="error-grado" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="seccion">Sección</label>
+                    <select id="seccion" name="seccion" required>
+                        <option value="">Seleccione una sección</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                    <span id="error-seccion" class="error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="taller">Taller a Elegir</label>
+                    <select id="taller" name="taller" required>
+                        <option value="">Seleccione un taller</option>
+                        <option value="ajedrez">Taller de Ajedrez</option>
+                        <option value="teatro">Taller de Teatro</option>
+                        <option value="oratoria">Taller de Oratoria</option>
+                        <option value="danza">Taller de Danza</option>
+                    </select>
+                    <span id="error-taller" class="error-message"></span>
+                </div>
+                <div class="form-group">
+                    <label for="horarios">Horarios Disponibles</label>
+                    <select id="horarios" name="horario" required>
+                        <option value="">Seleccione un horario</option>
+                    </select>
+                    <span id="error-horarios" class="error-message"></span>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" class="submit-button" value="Enviar Solicitud">
+                </div>
+            </form>
+            <a href="{% url 'index' %}" class="btn btn-secondary mt-3">Volver al Inicio</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("inscripcionForm");
+
+            // Validation functions
+            const validateText = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
+            const validateEmail = (value) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+            const validatePhone = (value) => /^[0-9]{9}$/.test(value);
+            const validateNumbersOnly = (value) => /^[0-9]+$/.test(value);
+
+            const fields = [
+                { id: "nombre", validator: validateText, error: "El nombre solo debe contener letras." },
+                { id: "apellido", validator: validateText, error: "El apellido solo debe contener letras." },
+                { id: "correo", validator: validateEmail, error: "Por favor, ingrese un correo válido." },
+                { id: "numero", validator: validatePhone, error: "El número debe contener exactamente 9 dígitos." },
+                { id: "apoderado", validator: validateText, error: "El nombre del apoderado solo debe contener letras." },
+                { id: "grado", validator: validateNumbersOnly, error: "El grado debe ser solo números." },
+                { id: "seccion", validator: validateText, error: "La sección solo debe contener letras." }
+            ];
+
+            fields.forEach(({ id, validator, error }) => {
+                const input = document.getElementById(id);
+                const errorElement = document.getElementById(`error-${id}`);
+
+                input.addEventListener("input", () => {
+                    if (validator(input.value)) {
+                        input.classList.remove("is-invalid");
+                        errorElement.textContent = "";
+                    } else {
+                        input.classList.add("is-invalid");
+                        errorElement.textContent = error;
+                    }
+                });
+            });
+
+            form.addEventListener("submit", (e) => {
+                let isValid = true;
+
+                fields.forEach(({ id, validator, error }) => {
+                    const input = document.getElementById(id);
+                    const errorElement = document.getElementById(`error-${id}`);
+
+                    if (!validator(input.value)) {
+                        input.classList.add("is-invalid");
+                        errorElement.textContent = error;
+                        isValid = false;
+                    } else {
+                        input.classList.remove("is-invalid");
+                        errorElement.textContent = "";
+                    }
+                });
+
+                if (!isValid) e.preventDefault();
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Define horarios para cada taller
+            const horariosPorTaller = {
+                ajedrez: ["Lunes 10:00-12:00", "Miércoles 14:00-16:00", "Viernes 16:00-18:00"],
+                teatro: ["Martes 9:00-11:00", "Jueves 13:00-15:00", "Sábado 10:00-12:00"],
+                oratoria: ["Lunes 14:00-16:00", "Miércoles 16:00-18:00", "Viernes 10:00-12:00"],
+                danza: ["Martes 16:00-18:00", "Jueves 10:00-12:00", "Sábado 14:00-16:00"],
+            };
+
+            const tallerSelect = document.getElementById("taller");
+            const horariosSelect = document.getElementById("horarios");
+            const errorHorarios = document.getElementById("error-horarios");
+
+            // Actualizar los horarios en función del taller seleccionado
+            tallerSelect.addEventListener("change", () => {
+                const tallerSeleccionado = tallerSelect.value;
+                horariosSelect.innerHTML = '<option value="">Seleccione un horario</option>'; // Reset combobox
+
+                if (tallerSeleccionado && horariosPorTaller[tallerSeleccionado]) {
+                    horariosPorTaller[tallerSeleccionado].forEach((horario) => {
+                        const option = document.createElement("option");
+                        option.value = horario;
+                        option.textContent = horario;
+                        horariosSelect.appendChild(option);
+                    });
+                    horariosSelect.classList.remove("is-invalid");
+                    errorHorarios.textContent = "";
+                } else {
+                    horariosSelect.classList.add("is-invalid");
+                    errorHorarios.textContent = "Por favor, seleccione un taller para mostrar horarios.";
+                }
+            });
+
+            // Validar horario seleccionado al enviar el formulario
+            const form = document.getElementById("inscripcionForm");
+            form.addEventListener("submit", (e) => {
+                if (!horariosSelect.value) {
+                    horariosSelect.classList.add("is-invalid");
+                    errorHorarios.textContent = "Debe seleccionar un horario.";
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("inscripcionForm");
+
+        form.addEventListener("submit", (e) => {
+            // Mostrar alerta de confirmación
+            alert("¡Formulario enviado correctamente! Nos pondremos en contacto.");
+        });
+    });
+</script>
+
+
+
+</body>
+
+</html>

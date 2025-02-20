@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Admisión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="{% static 'admisiones/form.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admisiones/form.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="my-5 text-center">Admisión</h1>
+        {% if success %}
+        <div class="alert alert-success show" role="alert">
+            ¡Formulario enviado correctamente!
+        </div>
+        {% endif %}
+        <form method="POST" class="row g-3" id="admissionForm">
+            {% csrf_token %}
+            <div class="col-md-6 form-group">
+                {{ form.primer_nombre.label_tag }}
+                {{ form.primer_nombre }}
+                <div id="primerNombreError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.segundo_nombre.label_tag }}
+                {{ form.segundo_nombre }}
+                <div id="segundoNombreError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.apellido_paterno.label_tag }}
+                {{ form.apellido_paterno }}
+                <div id="apellidoPaternoError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.apellido_materno.label_tag }}
+                {{ form.apellido_materno }}
+                <div id="apellidoMaternoError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.tipo_documento.label_tag }}
+                {{ form.tipo_documento }}
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.numero_documento.label_tag }}
+                {{ form.numero_documento }}
+                <div id="dniError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.fecha_nacimiento.label_tag }}
+                {{ form.fecha_nacimiento }}
+                <div id="fechaNacimientoError" class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.nacionalidad.label_tag }}
+                {{ form.nacionalidad }}
+            </div>
+            
+            <div class="col-md-6 form-group">
+                {{ form.sexo.label_tag }}
+                {{ form.sexo }}
+            </div>
+            <div class="col-md-6 form-group">
+                {{ form.aceptar_permisos.label_tag }}
+                {{ form.aceptar_permisos }}
+            </div>
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">Continuar</button>
+            </div>
+        </form>
+        <a href="{% url 'index' %}" class="btn btn-secondary mt-3">Volver al Inicio</a>
+    </div>
+
+    <script>
+        // Elementos de los campos
+        const primerNombre = document.getElementById('id_primer_nombre');
+        const segundoNombre = document.getElementById('id_segundo_nombre');
+        const apellidoPaterno = document.getElementById('id_apellido_paterno');
+        const apellidoMaterno = document.getElementById('id_apellido_materno');
+        const dni = document.getElementById('id_numero_documento');
+        const fechaNacimiento = document.getElementById('id_fecha_nacimiento');
+
+        // Función de validación de DNI
+        function validateDNI() {
+            const dniValue = dni.value;
+            const dniError = document.getElementById('dniError');
+            if (!/^\d{8}$/.test(dniValue)) {
+                dniError.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+                dni.classList.add('is-invalid');
+            } else {
+                dniError.textContent = '';
+                dni.classList.remove('is-invalid');
+            }
+        }
+
+        // Función de validación de nombres y apellidos
+        function validateName(inputElement, errorElement) {
+            const letterPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ]+$/;
+            const value = inputElement.value;
+            if (!letterPattern.test(value)) {
+                errorElement.textContent = 'Este campo solo puede contener letras.';
+                inputElement.classList.add('is-invalid');
+            } else {
+                errorElement.textContent = '';
+                inputElement.classList.remove('is-invalid');
+            }
+        }
+
+        // Función de validación de fecha de nacimiento
+        function validateFechaNacimiento() {
+            const today = new Date();
+            const fechaValue = new Date(fechaNacimiento.value);
+            const fechaError = document.getElementById('fechaNacimientoError');
+            if (fechaValue > today) {
+                fechaError.textContent = 'La fecha de nacimiento no puede ser posterior a la fecha actual.';
+                fechaNacimiento.classList.add('is-invalid');
+            } else {
+                fechaError.textContent = '';
+                fechaNacimiento.classList.remove('is-invalid');
+            }
+        }
+
+        // Agregar validaciones al escribir
+        primerNombre.addEventListener('input', () => validateName(primerNombre, document.getElementById('primerNombreError')));
+        segundoNombre.addEventListener('input', () => validateName(segundoNombre, document.getElementById('segundoNombreError')));
+        apellidoPaterno.addEventListener('input', () => validateName(apellidoPaterno, document.getElementById('apellidoPaternoError')));
+        apellidoMaterno.addEventListener('input', () => validateName(apellidoMaterno, document.getElementById('apellidoMaternoError')));
+        dni.addEventListener('input', validateDNI);
+        fechaNacimiento.addEventListener('input', validateFechaNacimiento);
+
+        // Prevenir el envío si hay errores
+        document.getElementById('admissionForm').addEventListener('submit', function(event) {
+            if (document.querySelectorAll('.is-invalid').length > 0) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+
+</html>
